@@ -1,0 +1,59 @@
+#!/bin/bash
+
+POSITIONAL=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    -i|--input)
+    INPUT="$2"
+    shift
+    shift
+    ;;
+    -m|--mode)
+    MODE="$2"
+    shift
+    shift
+    ;;
+    -h|--help)
+    HELP=true
+    shift
+    ;;
+    *)    # unknown option
+    POSITIONAL+=("$1") # save it in an array for later
+    shift
+    ;;
+esac
+done
+set -- "${POSITIONAL[@]}" # restore positional parameters
+
+if [ "$HELP" = "true" ]; then
+    echo "mplot - custom made gnuplot based plotter for scientific data"
+    echo "Usage:"
+    echo -e "\tmplot -a|--argument [value] ..."
+    echo "Arguments:"
+    echo -e "\t-i|--input [value] - input file containing data to be plotted"
+    echo -e "\t-m|--mode [value] - plotter mode, select one of the following:"
+    echo -e "\t\t\tsimple2d - standard plot"
+    echo -e "\t\t\theat2d - 2D heat map, requires 3 columns"
+
+    echo -e "\t\t\tsimple3d - standard splot"
+    echo -e "\t\t\tsimpal3d - splot with palette"
+    echo -e "\t\t\tvector3d - splot with vectors"
+    echo -e "\t\t\tvecpal3d - splot with vectors and palette"
+    echo -e "\t\t\theat3d - 3D heat map, suppress Z value, requires 4 columns"
+    exit
+fi
+
+echo "INPUT  = ${INPUT}"
+echo "MODE   = ${MODE}"
+
+# TODO: run different script according to MODE
+gnuplot --persist <<-EOFMarker
+
+    set view map; set dgrid3d;
+    set pm3d interpolate 0,0
+    splot "${INPUT}" using 1:2:3 with pm3d 
+
+EOFMarker
