@@ -49,11 +49,37 @@ fi
 echo "INPUT  = ${INPUT}"
 echo "MODE   = ${MODE}"
 
-# TODO: run different script according to MODE
-gnuplot --persist <<-EOFMarker
+if [ -z "$INPUT" ]; then
+    echo "Invalid or missing input file, see --help"
+    exit
+fi
+
+if [ -z "$MODE" ]; then
+    echo "Invalid mplot mode, see --help"
+    exit
+fi
+
+if [ "$MODE" = "heat2d" ]; then
+    gnuplot --persist <<-EOFMarker
 
     set view map; set dgrid3d;
     set pm3d interpolate 0,0
     splot "${INPUT}" using 1:2:3 with pm3d 
-
 EOFMarker
+elif [ "$MODE" = "simple2d" ]; then
+    echo "simple2d"
+elif [ "$MODE" = "simple3d" ]; then
+    echo "simple3d"
+elif [ "$MODE" = "simpal3d" ]; then
+    echo "simpal3d"
+elif [ "$MODE" = "vector3d" ]; then
+    echo "vector3d"
+elif [ "$MODE" = "vecpal3d" ]; then
+    echo "vecpal3d"
+elif [ "$MODE" = "heat3d" ]; then
+    echo "heat3d"
+else
+    echo "Invalid mplot mode, see --help"
+    exit
+fi
+
