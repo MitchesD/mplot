@@ -67,9 +67,16 @@ if [ "$MODE" = "heat2d" ]; then
     splot "${INPUT}" using 1:2:3 with pm3d 
 EOFMarker
 elif [ "$MODE" = "simple2d" ]; then
-    echo "simple2d"
+    gnuplot --persist <<-EOFMarker
+
+    plot "${INPUT}"
+EOFMarker
 elif [ "$MODE" = "simple3d" ]; then
     echo "simple3d"
+    gnuplot --persist <<-EOFMarker
+
+    splot "${INPUT}"
+EOFMarker
 elif [ "$MODE" = "simpal3d" ]; then
     echo "simpal3d"
 elif [ "$MODE" = "vector3d" ]; then
