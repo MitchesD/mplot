@@ -48,9 +48,6 @@ if [ "$HELP" = "true" ]; then
     exit
 fi
 
-echo "INPUT  = ${INPUT}"
-echo "MODE   = ${MODE}"
-
 if [ -z "$INPUT" ]; then
     echo "Invalid or missing input file, see --help"
     exit
