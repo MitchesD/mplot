@@ -37,7 +37,9 @@ if [ "$HELP" = "true" ]; then
     echo -e "\t-m|--mode [value] - plotter mode, select one of the following:"
     echo -e "\t\t\tsimple2d - standard plot"
     echo -e "\t\t\theat2d - 2D heat map, requires 3 columns"
-
+    echo -e "\t\t\tvector2d - 2D vector plot from 3D coords, file format: x1,y1,z1,x2,y2,z2"
+    echo -e "\t\t\tvecdist2d - 2D vector plot from 3D coords with distance label, file format: x1,y1,z1,x2,y2,z2,dist"
+    echo -e ""
     echo -e "\t\t\tsimple3d - standard splot"
     echo -e "\t\t\tsimpal3d - splot with palette"
     echo -e "\t\t\tvector3d - splot with vectors"
@@ -70,6 +72,14 @@ elif [ "$MODE" = "simple2d" ]; then
     gnuplot --persist <<-EOFMarker
 
     plot "${INPUT}"
+EOFMarker
+elif [ "$MODE" = "vector2d" ]; then
+    gnuplot --persist <<-EOFMarker
+    plot "${INPUT}" using 1:2:(\$4-\$1):(\$5-\$2) with vectors
+EOFMarker
+elif [ "$MODE" = "vecdist2d" ]; then
+    gnuplot --persist <<-EOFMarker
+    plot '${INPUT}' using 1:2:(\$4-\$1):(\$5-\$2) with vectors, '${INPUT}' u 4:5:7 with labels left
 EOFMarker
 elif [ "$MODE" = "simple3d" ]; then
     echo "simple3d"
