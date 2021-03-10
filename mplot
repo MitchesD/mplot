@@ -37,12 +37,12 @@ if [ "$HELP" = "true" ]; then
     echo -e "\t-m|--mode [value] - plotter mode, select one of the following:"
     echo -e "\t\t\tsimple2d - standard plot"
     echo -e "\t\t\theat2d - 2D heat map, requires 3 columns"
-    echo -e "\t\t\tvector2d - 2D vector plot from 3D coords, file format: x1,y1,z1,x2,y2,z2"
-    echo -e "\t\t\tvecdist2d - 2D vector plot from 3D coords with distance label, file format: x1,y1,z1,x2,y2,z2,dist"
+    echo -e "\t\t\tvector2d - 2D vector plot from 3D coords, (a, b): xa,ya,za,xb,yb,zb, aka two points"
+    echo -e "\t\t\tvecdist2d - 2D vector plot from 3D coords, as vector2d, with distance label, file format: x1,y1,z1,x2,y2,z2,dist"
     echo -e ""
     echo -e "\t\t\tsimple3d - standard splot"
     echo -e "\t\t\tsimpal3d - splot with palette"
-    echo -e "\t\t\tvector3d - splot with vectors"
+    echo -e "\t\t\tvector3d - 3D vector plot, requires (a, direction) aka point and vector direction"
     echo -e "\t\t\tvecpal3d - splot with vectors and palette"
     echo -e "\t\t\theat3d - 3D heat map, suppress Z value, requires 4 columns"
     exit
@@ -87,7 +87,9 @@ EOFMarker
 elif [ "$MODE" = "simpal3d" ]; then
     echo "simpal3d"
 elif [ "$MODE" = "vector3d" ]; then
-    echo "vector3d"
+    gnuplot --persist <<-EOFMarker
+    splot '${INPUT}' using 1:2:3:4:5:6 with vectors
+EOFMarker
 elif [ "$MODE" = "vecpal3d" ]; then
     echo "vecpal3d"
 elif [ "$MODE" = "heat3d" ]; then
