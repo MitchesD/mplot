@@ -20,6 +20,10 @@ case $key in
     HELP=true
     shift
     ;;
+    -a|--axes)
+    AXES=true
+    shift
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift
@@ -28,12 +32,27 @@ esac
 done
 set -- "${POSITIONAL[@]}" # restore positional parameters
 
+if [ "$AXES" = "true" ]; then
+    AXES_STR_2D="set xlabel 'x'
+    set ylabel'y'"
+
+    AXES_STR_3D="set xlabel 'x'
+    set ylabel 'y'
+    set zlabel 'z'"
+fi
+
+# set term which is suitable for you
+PREFIXES="set term wxt;"
+PREFIX_2D="${PREFIXES} ${AXES_STR_2D}"
+PREFIX_3D="${PREFIXES} ${AXES_STR_3D}"
+
 if [ "$HELP" = "true" ]; then
     echo "mplot - custom made gnuplot based plotter for scientific data"
     echo "Usage:"
     echo -e "\tmplot -a|--argument [value] ..."
     echo "Arguments:"
     echo -e "\t-i|--input [value] - input file containing data to be plotted"
+    echo -e "\t-a|--axes - enable axis labels (XYZ)"
     echo -e "\t-m|--mode [value] - plotter mode, select one of the following:"
     echo -e "\t\t\tsimple2d - standard plot"
     echo -e "\t\t\theat2d - 2D heat map, requires 3 columns"
@@ -58,38 +77,53 @@ if [ -z "$MODE" ]; then
     exit
 fi
 
+# 2D heat map
 if [ "$MODE" = "heat2d" ]; then
     gnuplot --persist <<-EOFMarker
-
+    ${PREFIX_2D}
     set view map; set dgrid3d;
     set pm3d interpolate 0,0
     splot "${INPUT}" using 1:2:3 with pm3d 
 EOFMarker
+
+# simple 2D point plot
 elif [ "$MODE" = "simple2d" ]; then
     gnuplot --persist <<-EOFMarker
-
+    ${PREFIX_2D}
     plot "${INPUT}"
 EOFMarker
+
+# 2D vector plot, requires start and end point
 elif [ "$MODE" = "vector2d" ]; then
     gnuplot --persist <<-EOFMarker
+    ${PREFIX_2D}
     plot "${INPUT}" using 1:2:(\$4-\$1):(\$5-\$2) with vectors
 EOFMarker
+
+# 2D vector plot with vec length as input, requires start and end point
 elif [ "$MODE" = "vecdist2d" ]; then
     gnuplot --persist <<-EOFMarker
+    ${PREFIX_2D}
     plot '${INPUT}' using 1:2:(\$4-\$1):(\$5-\$2) with vectors, '${INPUT}' u 4:5:7 with labels left
 EOFMarker
-elif [ "$MODE" = "simple3d" ]; then
-    echo "simple3d"
-    gnuplot --persist <<-EOFMarker
 
+# simple 3D point plot
+elif [ "$MODE" = "simple3d" ]; then
+    gnuplot --persist <<-EOFMarker
+    ${PREFIX_3D}
     splot "${INPUT}"
 EOFMarker
+
 elif [ "$MODE" = "simpal3d" ]; then
     echo "simpal3d"
+
+# 3D vector plot in format (point, direction)
 elif [ "$MODE" = "vector3d" ]; then
     gnuplot --persist <<-EOFMarker
+    ${PREFIX_3D}
     splot '${INPUT}' using 1:2:3:4:5:6 with vectors
 EOFMarker
+
 elif [ "$MODE" = "vecpal3d" ]; then
     echo "vecpal3d"
 elif [ "$MODE" = "heat3d" ]; then
