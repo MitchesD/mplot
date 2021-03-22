@@ -34,17 +34,22 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 
 if [ "$AXES" = "true" ]; then
     AXES_STR_2D="set xlabel 'x'
-    set ylabel'y'"
+    set ylabel 'y'
+    set xzeroaxis
+    set yzeroaxis"
 
     AXES_STR_3D="set xlabel 'x'
     set ylabel 'y'
-    set zlabel 'z'"
+    set zlabel 'z'
+    set xzeroaxis
+    set yzeroaxis
+    set zzeroaxis"
 fi
 
 # set term which is suitable for you
 PREFIXES="set term wxt;"
 PREFIX_2D="${PREFIXES} ${AXES_STR_2D}"
-PREFIX_3D="${PREFIXES} ${AXES_STR_3D}"
+PREFIX_3D="${PREFIXES} ${AXES_STR_3D}; set xyplane at 0;"
 
 if [ "$HELP" = "true" ]; then
     echo "mplot - custom made gnuplot based plotter for scientific data"
