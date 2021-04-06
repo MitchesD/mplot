@@ -65,9 +65,9 @@ if [ "$HELP" = "true" ]; then
     echo -e "\t\t\tvecdist2d - 2D vector plot from 3D coords, as vector2d, with distance label, file format: x1,y1,z1,x2,y2,z2,dist"
     echo -e ""
     echo -e "\t\t\tsimple3d - standard splot"
-    echo -e "\t\t\tsimpal3d - splot with palette"
+    echo -e "\t\t\tsimpal3d - 3D colored point plot, requires x,y,z,c"
     echo -e "\t\t\tvector3d - 3D vector plot, requires (a, direction) aka point and vector direction"
-    echo -e "\t\t\tvecpal3d - splot with vectors and palette"
+    echo -e "\t\t\tvecpal3d - 3D colored vector plot, requires (a, direction, c) aka point, vector direction and single value"
     echo -e "\t\t\theat3d - 3D heat map, suppress Z value, requires 4 columns"
     exit
 fi
@@ -88,21 +88,21 @@ if [ "$MODE" = "heat2d" ]; then
     ${PREFIX_2D}
     set view map; set dgrid3d;
     set pm3d interpolate 0,0
-    splot "${INPUT}" using 1:2:3 with pm3d 
+    splot '${INPUT}' using 1:2:3 with pm3d
 EOFMarker
 
 # simple 2D point plot
 elif [ "$MODE" = "simple2d" ]; then
     gnuplot --persist <<-EOFMarker
     ${PREFIX_2D}
-    plot "${INPUT}"
+    plot '${INPUT}'
 EOFMarker
 
 # 2D vector plot, requires start and end point
 elif [ "$MODE" = "vector2d" ]; then
     gnuplot --persist <<-EOFMarker
     ${PREFIX_2D}
-    plot "${INPUT}" using 1:2:(\$4-\$1):(\$5-\$2) with vectors
+    plot '${INPUT}' using 1:2:(\$4-\$1):(\$5-\$2) with vectors
 EOFMarker
 
 # 2D vector plot with vec length as input, requires start and end point
@@ -116,11 +116,15 @@ EOFMarker
 elif [ "$MODE" = "simple3d" ]; then
     gnuplot --persist <<-EOFMarker
     ${PREFIX_3D}
-    splot "${INPUT}"
+    splot '${INPUT}'
 EOFMarker
 
+# simple 3D colored point plot
 elif [ "$MODE" = "simpal3d" ]; then
-    echo "simpal3d"
+    gnuplot --persist <<-EOFMarker
+    ${PREFIX_3D}
+    splot '${INPUT}' using 1:2:3:4 palette
+EOFMarker
 
 # 3D vector plot in format (point, direction)
 elif [ "$MODE" = "vector3d" ]; then
@@ -129,8 +133,13 @@ elif [ "$MODE" = "vector3d" ]; then
     splot '${INPUT}' using 1:2:3:4:5:6 with vectors
 EOFMarker
 
+# 3D colored vector plot in format (point, direction, color)
 elif [ "$MODE" = "vecpal3d" ]; then
-    echo "vecpal3d"
+    gnuplot --persist <<-EOFMarker
+    ${PREFIX_3D}
+    splot '${INPUT}' using 1:2:3:4:5:6:7 with vectors palette
+EOFMarker
+
 elif [ "$MODE" = "heat3d" ]; then
     echo "heat3d"
 else
