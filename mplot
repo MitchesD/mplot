@@ -68,7 +68,7 @@ if [ "$HELP" = "true" ]; then
     echo -e "\t\t\tsimpal3d - 3D colored point plot, requires x,y,z,c"
     echo -e "\t\t\tvector3d - 3D vector plot, requires (a, direction) aka point and vector direction"
     echo -e "\t\t\tvecpal3d - 3D colored vector plot, requires (a, direction, c) aka point, vector direction and single value"
-    echo -e "\t\t\theat3d - 3D heat map, suppress Z value, requires 4 columns"
+    echo -e "\t\t\theat3d - 3D heat map, requires 4 columns sorted by X value with blank lines between different values"
     exit
 fi
 
@@ -140,8 +140,15 @@ elif [ "$MODE" = "vecpal3d" ]; then
     splot '${INPUT}' using 1:2:3:4:5:6:7 with vectors palette
 EOFMarker
 
+# 3D heat map, requires 4 columns sorted by X coordinate with blank lines
 elif [ "$MODE" = "heat3d" ]; then
-    echo "heat3d"
+    gnuplot --persist <<-EOFMarker
+    ${PREFIX_3D}
+    set samples 25, 25
+    set isosamples 50, 50
+    set pm3d interpolate 0, 0
+    splot '${INPUT}' using 1:2:3:4 with pm3d
+EOFMarker
 else
     echo "Invalid mplot mode, see --help"
     exit
