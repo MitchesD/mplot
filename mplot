@@ -24,6 +24,16 @@ case $key in
     AXES=true
     shift
     ;;
+    -s|--save)
+    SAVE=true
+    TO_FILE=$2
+    shift
+    ;;
+    -p|--psave)
+    P_SAVE=true
+    TO_FILE=$2
+    shift
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift
@@ -48,8 +58,25 @@ fi
 
 # set term which is suitable for you
 PREFIXES="set term wxt;"
-PREFIX_2D="${PREFIXES} ${AXES_STR_2D}"
-PREFIX_3D="${PREFIXES} ${AXES_STR_3D}; set xyplane at 0;"
+PREFIX_2D="${AXES_STR_2D}"
+PREFIX_3D="${AXES_STR_3D}; set xyplane at 0;"
+PARAMS="--persist"
+
+if [ "$SAVE" = "true" ] || [ "$P_SAVE" = true ]; then
+    if [ "$TO_FILE" ]; then
+        SUFIX_SAVE="set terminal png;
+                    set output '$TO_FILE.png';
+                    replot"
+
+        # if --save, don't use --persist
+        if [ "$SAVE" = true ]; then
+            PARAMS=""
+        fi
+    else
+        echo "Invalid or missing argument where to save"
+        exit
+    fi
+fi
 
 if [ "$HELP" = "true" ]; then
     echo "mplot - custom made gnuplot based plotter for scientific data"
@@ -58,6 +85,8 @@ if [ "$HELP" = "true" ]; then
     echo "Arguments:"
     echo -e "\t-i|--input [value] - input file containing data to be plotted"
     echo -e "\t-a|--axes - enable axis labels (XYZ)"
+    echo -e "\t-s|--save [file] - save output to file as PNG"
+    echo -e "\t-p|--psave [file] - save output to file as PNG and leave window open"
     echo -e "\t-m|--mode [value] - plotter mode, select one of the following:"
     echo -e "\t\t\tsimple2d - standard plot"
     echo -e "\t\t\theat2d - 2D heat map, requires 3 columns"
@@ -84,73 +113,67 @@ fi
 
 # 2D heat map
 if [ "$MODE" = "heat2d" ]; then
-    gnuplot --persist <<-EOFMarker
-    ${PREFIX_2D}
+    PLOT="${PREFIX_2D}
     set view map; set dgrid3d;
-    set pm3d interpolate 0,0
-    splot '${INPUT}' using 1:2:3 with pm3d
-EOFMarker
+    set pm3d interpolate 0,0;
+    splot '${INPUT}' using 1:2:3 with pm3d;"
 
 # simple 2D point plot
 elif [ "$MODE" = "simple2d" ]; then
-    gnuplot --persist <<-EOFMarker
-    ${PREFIX_2D}
-    plot '${INPUT}'
-EOFMarker
+    PLOT="${PREFIX_2D}
+    plot '${INPUT}';"
 
 # 2D vector plot, requires start and end point
 elif [ "$MODE" = "vector2d" ]; then
-    gnuplot --persist <<-EOFMarker
-    ${PREFIX_2D}
-    plot '${INPUT}' using 1:2:(\$4-\$1):(\$5-\$2) with vectors
-EOFMarker
+    PLOT="${PREFIX_2D}
+    plot '${INPUT}' using 1:2:(\$4-\$1):(\$5-\$2) with vectors;"
 
 # 2D vector plot with vec length as input, requires start and end point
 elif [ "$MODE" = "vecdist2d" ]; then
-    gnuplot --persist <<-EOFMarker
-    ${PREFIX_2D}
-    plot '${INPUT}' using 1:2:(\$4-\$1):(\$5-\$2) with vectors, '${INPUT}' u 4:5:7 with labels left
-EOFMarker
+    PLOT="${PREFIX_2D}
+    plot '${INPUT}' using 1:2:(\$4-\$1):(\$5-\$2) with vectors, '${INPUT}' u 4:5:7 with labels left;"
 
 # simple 3D point plot
 elif [ "$MODE" = "simple3d" ]; then
-    gnuplot --persist <<-EOFMarker
-    ${PREFIX_3D}
-    splot '${INPUT}'
-EOFMarker
+    PLOT="${PREFIX_3D}
+    splot '${INPUT}';"
 
 # simple 3D colored point plot
 elif [ "$MODE" = "simpal3d" ]; then
-    gnuplot --persist <<-EOFMarker
-    ${PREFIX_3D}
-    splot '${INPUT}' using 1:2:3:4 palette
-EOFMarker
+    PLOT="${PREFIX_3D}
+    splot '${INPUT}' using 1:2:3:4 palette;"
 
 # 3D vector plot in format (point, direction)
 elif [ "$MODE" = "vector3d" ]; then
-    gnuplot --persist <<-EOFMarker
-    ${PREFIX_3D}
-    splot '${INPUT}' using 1:2:3:4:5:6 with vectors
-EOFMarker
+    PLOT="${PREFIX_3D}
+    splot '${INPUT}' using 1:2:3:4:5:6 with vectors;"
 
 # 3D colored vector plot in format (point, direction, color)
 elif [ "$MODE" = "vecpal3d" ]; then
-    gnuplot --persist <<-EOFMarker
-    ${PREFIX_3D}
-    splot '${INPUT}' using 1:2:3:4:5:6:7 with vectors palette
-EOFMarker
+    PLOT="${PREFIX_3D}
+    splot '${INPUT}' using 1:2:3:4:5:6:7 with vectors palette;"
 
 # 3D heat map, requires 4 columns sorted by X coordinate with blank lines
 elif [ "$MODE" = "heat3d" ]; then
-    gnuplot --persist <<-EOFMarker
-    ${PREFIX_3D}
-    set samples 25, 25
-    set isosamples 50, 50
-    set pm3d interpolate 0, 0
-    splot '${INPUT}' using 1:2:3:4 with pm3d
-EOFMarker
+    PLOT="${PREFIX_3D}
+    set samples 25, 25;
+    set isosamples 50, 50;
+    set pm3d interpolate 0, 0;
+    splot '${INPUT}' using 1:2:3:4 with pm3d;"
 else
     echo "Invalid mplot mode, see --help"
     exit
 fi
 
+SUFIXES="$SUFIX_SAVE"
+
+gnuplot $PARAMS <<EOF
+$PREFIXES
+$PLOT
+$SUFIXES
+EOF
+
+# just for debug
+echo $PREFIXES
+echo $PLOT
+echo $SUFIXES
