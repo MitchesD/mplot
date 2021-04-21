@@ -65,11 +65,15 @@ PARAMS="--persist"
 if [ "$SAVE" = "true" ] || [ "$P_SAVE" = true ]; then
     if [ "$TO_FILE" ]; then
         SUFIX_SAVE="set terminal png;
-                    set output '$TO_FILE.png';
-                    replot"
+                    set output '$TO_FILE.png';"
+
+        # add replot only if we want to plot window
+        if [ -z "$SAVE" ]; then
+            SUFIX_SAVE="$SUFIX_SAVE replot"
+        fi
 
         # if --save, don't use --persist
-        if [ "$SAVE" = true ]; then
+        if [ "$SAVE" = "true" ]; then
             PARAMS=""
         fi
     else
@@ -166,6 +170,11 @@ else
 fi
 
 SUFIXES="$SUFIX_SAVE"
+
+if [ "$SAVE" = "true" ]; then
+    PREFIXES=$SUFIXES
+    SUFIXES=""
+fi
 
 gnuplot $PARAMS <<EOF
 $PREFIXES
