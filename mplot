@@ -34,6 +34,13 @@ case $key in
     TO_FILE=$2
     shift
     ;;
+    -d|--diff)
+    DIFF=true
+    REF_FILE=$2
+    FIRST_FILE=$3
+    SEC_FILE=$4
+    shift
+    ;;
     *)    # unknown option
     POSITIONAL+=("$1") # save it in an array for later
     shift
@@ -83,12 +90,13 @@ if [ "$SAVE" = "true" ] || [ "$P_SAVE" = true ]; then
 fi
 
 if [ "$HELP" = "true" ]; then
-    echo "mplot - custom made gnuplot based plotter for scientific data"
+    echo "mplot - custom made gnuplot based plotter for scientific data and image diffs"
     echo "Usage:"
     echo -e "\tmplot -a|--argument [value] ..."
     echo "Arguments:"
     echo -e "\t-i|--input [value] - input file containing data to be plotted"
     echo -e "\t-a|--axes - enable axis labels (XYZ)"
+    echo -e "\t-d|--diff - special mode for image diffing, requires 3 files (reference, first, second), computes MSE, PSNR, SSIM and MAE"
     echo -e "\t-s|--save [file] - save output to file as PNG"
     echo -e "\t-p|--psave [file] - save output to file as PNG and leave window open"
     echo -e "\t-m|--mode [value] - plotter mode, select one of the following:"
@@ -102,6 +110,25 @@ if [ "$HELP" = "true" ]; then
     echo -e "\t\t\tvector3d - 3D vector plot, requires (a, direction) aka point and vector direction"
     echo -e "\t\t\tvecpal3d - 3D colored vector plot, requires (a, direction, c) aka point, vector direction and single value"
     echo -e "\t\t\theat3d - 3D heat map, requires 4 columns sorted by X value with blank lines between different values"
+    exit
+fi
+
+if [ "$DIFF" = "true" ]; then
+    DIR_PREFIX="/usr/local/include/mplot/"
+
+    mse1="$(python3 "$DIR_PREFIX"mse.py $REF_FILE $FIRST_FILE)"
+    psnr1="$(python3 "$DIR_PREFIX"psnr.py $REF_FILE $FIRST_FILE)"
+    ssim1="$(python3 "$DIR_PREFIX"ssim.py $REF_FILE $FIRST_FILE)"
+    mae1="$(python3 "$DIR_PREFIX"mae.py $REF_FILE $FIRST_FILE)"
+    echo -e "First image: $FIRST_FILE \n\t MSE:  $mse1 \n\t PSNR: $psnr1 \n\t SSIM: $ssim1 \n\t MAE:  $mae1"
+    mse2="$(python3 "$DIR_PREFIX"mse.py $REF_FILE $SEC_FILE)"
+    psnr2="$(python3 "$DIR_PREFIX"psnr.py $REF_FILE $SEC_FILE)"
+    ssim2="$(python3 "$DIR_PREFIX"ssim.py $REF_FILE $SEC_FILE)"
+    mae2="$(python3 "$DIR_PREFIX"mae.py $REF_FILE $SEC_FILE)"
+    echo -e "Second image: $SEC_FILE \n\t MSE:  $mse2 \n\t PSNR: $psnr2 \n\t SSIM: $ssim2 \n\t MAE:  $mae2"
+
+    echo -e "to reference image: $REF_FILE"
+
     exit
 fi
 
