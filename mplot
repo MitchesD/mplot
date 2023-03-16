@@ -120,14 +120,16 @@ if [ "$DIFF" = "true" ]; then
     psnr1="$(python3 "$DIR_PREFIX"psnr.py $REF_FILE $FIRST_FILE)"
     ssim1="$(python3 "$DIR_PREFIX"ssim.py $REF_FILE $FIRST_FILE)"
     mae1="$(python3 "$DIR_PREFIX"mae.py $REF_FILE $FIRST_FILE)"
-    echo -e "First image: $FIRST_FILE \n\t MSE:  $mse1 \n\t PSNR: $psnr1 \n\t SSIM: $ssim1 \n\t MAE:  $mae1"
+    relmse1="$(python3 "$DIR_PREFIX"relmse.py $REF_FILE $FIRST_FILE)"
+    echo -e "First image: $FIRST_FILE \n\t MSE:  $mse1 \n\t PSNR: $psnr1 \n\t SSIM: $ssim1 \n\t MAE:  $mae1 \n\t relMSE: $relmse1"
 
     if ! [[ -z $SEC_FILE ]]; then
         mse2="$(python3 "$DIR_PREFIX"mse.py $REF_FILE $SEC_FILE)"
         psnr2="$(python3 "$DIR_PREFIX"psnr.py $REF_FILE $SEC_FILE)"
         ssim2="$(python3 "$DIR_PREFIX"ssim.py $REF_FILE $SEC_FILE)"
         mae2="$(python3 "$DIR_PREFIX"mae.py $REF_FILE $SEC_FILE)"
-        echo -e "Second image: $SEC_FILE \n\t MSE:  $mse2 \n\t PSNR: $psnr2 \n\t SSIM: $ssim2 \n\t MAE:  $mae2"
+        relmse2="$(python3 "$DIR_PREFIX"relmse.py $REF_FILE $SEC_FILE)"
+        echo -e "Second image: $SEC_FILE \n\t MSE:  $mse2 \n\t PSNR: $psnr2 \n\t SSIM: $ssim2 \n\t MAE:  $mae2 \n\t relMSE: $relmse2"
     fi
 
     echo -e "to reference image: $REF_FILE"

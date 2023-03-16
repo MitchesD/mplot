@@ -19,4 +19,5 @@ if __name__ == "__main__":
     im2 = cv2.imread(sys.argv[2])
 
     mse = calculate_mse(im1, im2)
-    print(mse)
+    rmse = math.sqrt(mse)
+    print(str(mse) + " RMSE: " + str(rmse))
