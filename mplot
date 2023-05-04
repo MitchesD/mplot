@@ -96,7 +96,7 @@ if [ "$HELP" = "true" ]; then
     echo "Arguments:"
     echo -e "\t-i|--input [value] - input file containing data to be plotted"
     echo -e "\t-a|--axes - enable axis labels (XYZ)"
-    echo -e "\t-d|--diff - special mode for image diffing, requires files: reference, first, [second]. Computes MSE, PSNR, SSIM and MAE"
+    echo -e "\t-d|--diff - special mode for image diffing, requires files: reference, first, [second]. Computes MSE, PSNR, SSIM, MAE and relMSE"
     echo -e "\t-s|--save [file] - save output to file as PNG"
     echo -e "\t-p|--psave [file] - save output to file as PNG and leave window open"
     echo -e "\t-m|--mode [value] - plotter mode, select one of the following:"
